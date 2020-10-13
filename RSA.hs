@@ -96,8 +96,20 @@ factor p n
   | otherwise    = factor (nxt p) n
   where nxt n = if' (n == 2) 3 (n+2)
 
-symbols = zip [0,1..] (['A'..'Z'] ++ ['a'..'z'] ++ 
-                         [' ', '.', ',', '(', ')', '!'] ++ 
-                         ['0'..'9']) 
 
-alpha = BM.fromList symbols
+
+symbols = (
+           ['A'..'Z'] ++ ['a'..'z'] ++ 
+           [' ', '.', ',', '(', ')', '!', '_', '?', ';'] ++ 
+           ['0'..'9'] ++ ['\n', '\"', '\'']
+           )
+
+alpha = BM.fromList $ zip [0,1..] symbols
+
+cleanMessage :: [String] -> String
+cleanMessage s = filter (\x -> elem x symbols) s'
+  where s' = catStrings s
+
+catStrings :: [String] -> String
+catStrings (s:ss) = s ++ "\n" ++ catStrings ss
+catStrings [] = ""
