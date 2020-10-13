@@ -17,13 +17,12 @@ parseArgs _ = Usage
 usage :: IO ()
 usage = do
   name <- getProgName
-  putStrLn ("usage: " ++ name ++ " num1 <num2>") 
-  putStrLn "  - one argument:"
-  putStrLn "     preview the circuit for quantum integers of that length"
-  putStrLn "  - two arguments:"
-  putStrLn "     simulate the circuit for adding the two numbers"
-  putStrLn "     (note that quantum simulation is not efficient)"
-
+  putStrLn ("usage: " ++ name ++ " prime1 prime2") 
+  putStrLn "  - Generates public and private keys based on the primes"
+  putStrLn "    (non-deterministic - will generate new keys each time)"
+  putStrLn ("usage: " ++ name ++ " [e/d] keyFile.rsa input.txt") 
+  putStrLn "  -  encodes or decodes the contents of input.txt"
+  putStrLn "     (encode (e) should use public.rsa and decode (d) private.rsa)"
 
 main = do
   args <- getArgs
@@ -32,23 +31,16 @@ main = do
     PubKey p1 p2 -> do
       g <- newStdGen
       let (f,_) = randomR (0.5 :: Float, 1.0 :: Float) g
-      -- (private, public)
       let ((n1,e),(n2,d)) = makeKeyPair (p1, p2, f)
-      writeFile "./public.rsa" $ (show n1) ++ "\n" ++ (show e)
+      writeFile "./public.rsa"  $ (show n1) ++ "\n" ++ (show e)
       writeFile "./private.rsa" $ (show n2) ++ "\n" ++ (show d)
     CliRSA mode input keyfile -> do
       f <- readFile keyfile
       let [n,d] = map (read) (lines f) :: [Integer]
       g <- readFile input
       let oldText = cleanMessage $ lines g
-      if mode == "d"
-        then
-          do
-            -- let newText = decrypt (n,d) alpha oldText
+      if mode == "d" then do
             putStrLn $ decrypt (n,d) alpha oldText
-      else if mode == "e"
-        then
-          do
-            -- let newText = encrypt (n,d) alpha oldText
+      else if mode == "e" then do
             putStrLn $ encrypt (n,d) alpha oldText
       else error("stop!")
